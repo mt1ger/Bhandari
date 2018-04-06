@@ -1,0 +1,16 @@
+Preliminary\, Idea:\\
+1. WoP = \frac{(a\times DoLL + b\times NoH)}{SC_{MBL}}\\
+2. SC_l = \frac{TNoSS}{NoOSS}\times \frac{TSSiAS}{NoAS}\\
+3. SC_{MBL} = Min(SC_l), l\in LoP\\
+4. a + b = 1\\
+5. Still\, trying\, to\, figure\, out\, how\, to\, take\, DoLL\, into\, equation\, 1;\\
+\\
+WoP: Weight\, of\, Path\\
+SC: Spcectral\, Compactness\\
+DoLL: Distance\, of\, the\, Longest\, Link\\
+NoH: Number\, of\, Hops\\
+MBL: Most\, Busy\, Link\\
+TNoSS: Total\, Number\, of\, SpecSlots\\
+TSSiAS: Total\, SpecSlots\, in\, Available\, Segments\\
+NoOSS: Number\, of\, Occupied\, SpecSlots\\
+NoAS: Number\, of\, Available\, Segments\\
