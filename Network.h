@@ -33,13 +33,15 @@ class Network {
 		long long NumofRequests;
 		unsigned int NumofCores;
 		int SectionNumLimitation;
+		double a, b, c;
+
 
 		// Topology Variables
 		unsigned int NumofNodes; 
 		vector< vector<double> > NodesWeight;
 		vector<int> NumofAjacentNodes;
 		vector< vector< vector<int> > > DRoutingTable;
-		vector< vector< vector< vector <int> > > > routingTable;
+		vector< vector< vector< vector<int> > > > routingTable;
 
 		// Metrics per Request
 		double TotalHoldingTime;
@@ -69,8 +71,10 @@ class Network {
 		long long NumofTransponders; // Number of TranspondersUsed at a Specific Time
 		long long MaxNumofTransponders; // For one time simulation, Maximum Number of Transponders Used Simultaneously
 		int NumofSections;
+		int MaxNoH, MinNoH;
 		int MaxNumofSections;
 		double SystemClock;
+		
 
 		// Resource Variables
 		vector< vector< vector< vector<bool> > > > SpectralSlots;

@@ -9,9 +9,9 @@ SRCS=Network.cpp\
 	 RoutingTable.cpp\
 	 Topology.cpp\
 	 main.cpp\
-	 # ModulationFormats.cpp\
+	 ModulationFormats.cpp\
 	 RandomVariable.cpp\
-	 ResourceAssignment_FFM.cpp\
+	 ResourceAssignment.cpp\
 	 TrafficGenerator.cpp\
 	 Event.cpp\
 	 EventQueue.cpp\
@@ -24,10 +24,7 @@ all: $(OBJS) $(EXEC)
 $(EXEC): $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
 
-# Network.o: Network.cpp Network.h EventQueue.h RoutingTable.h TrafficGenerator.h Event.h ResourceAssignment_FullyFlex.h
-# 	$(CC) $(CFLAGS) Network.cpp
-#
-Network.o: Network.cpp Network.h RoutingTable.h 
+Network.o: Network.cpp Network.h EventQueue.h RoutingTable.h TrafficGenerator.h Event.h ResourceAssignment.h
 	$(CC) $(CFLAGS) Network.cpp
 
 Topology.o: Topology.cpp Topology.h Network.h
@@ -42,23 +39,23 @@ Bhandari.o: Bhandari.cpp Bhandari.h Network.h Dijkstra.h Topology.h
 RoutingTable.o: RoutingTable.cpp RoutingTable.h Network.h Dijkstra.h
 	$(CC) $(CFLAGS) RoutingTable.cpp
 
-# ResourceAssignment_FFM.o: ResourceAssignment_FFM.cpp ResourceAssignment_FullyFlex.h Event.h EventQueue.h RoutingTable.h ModulationFormats.h
-# 	$(CC) $(CFLAGS) ResourceAssignment_FFM.cpp
-#
-# TrafficGenerator.o: TrafficGenerator.cpp TrafficGenerator.h Network.h EventQueue.h RandomVariable.h
-# 	$(CC) $(CFLAGS) TrafficGenerator.cpp
-#
-# Event.o: Event.cpp Event.h
-# 	$(CC) $(CFLAGS) Event.cpp
-#
-# EventQueue.o: EventQueue.cpp EventQueue.h Event.h
-# 	$(CC) $(CFLAGS) EventQueue.cpp
-#
-# RandomVariable.o: RandomVariable.cpp RandomVariable.h 
-# 	$(CC) $(CFLAGS) RandomVariable.cpp
-#
-# ModulationFormats.o: ModulationFormats.cpp ModulationFormats.h Event.h Network.h
-# 	$(CC) $(CFLAGS) ModulationFormats.cpp
+ResourceAssignment.o: ResourceAssignment.cpp ResourceAssignment.h Event.h EventQueue.h RoutingTable.h ModulationFormats.h
+	$(CC) $(CFLAGS) ResourceAssignment.cpp
+
+TrafficGenerator.o: TrafficGenerator.cpp TrafficGenerator.h Network.h EventQueue.h RandomVariable.h
+	$(CC) $(CFLAGS) TrafficGenerator.cpp
+
+Event.o: Event.cpp Event.h
+	$(CC) $(CFLAGS) Event.cpp
+
+EventQueue.o: EventQueue.cpp EventQueue.h Event.h
+	$(CC) $(CFLAGS) EventQueue.cpp
+
+RandomVariable.o: RandomVariable.cpp RandomVariable.h 
+	$(CC) $(CFLAGS) RandomVariable.cpp
+
+ModulationFormats.o: ModulationFormats.cpp ModulationFormats.h Event.h Network.h
+	$(CC) $(CFLAGS) ModulationFormats.cpp
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp

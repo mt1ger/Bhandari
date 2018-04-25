@@ -1,5 +1,6 @@
 // #define DEBUG_test_sequence_in_queue
 // #define DEBUG_probe_NumofDoneRequests_and_NumofRequests
+// #define DEBUG_content_in_routingTable
 #define DEBUG_print_EventID_of_blocked_requests
  
 
@@ -7,18 +8,10 @@
 #include "RoutingTable.h"
 #include "Network.h"
 #include "Bhandari.h"
-// #include "TrafficGenerator.h"
-// #include "Event.h"
+#include "TrafficGenerator.h"
+#include "Event.h"
 
-// #include "ResourceAssignment_FuFBF.h"
-// #include "ResourceAssignment_FuFVF.h"
-// #include "ResourceAssignment_IsolatedCore.h"
-// #include "ResourceAssignment_ICM.h"
-// #include "ResourceAssignment_FullyFlex.h"
-// #include "ResourceAssignment_FixedFlex.h"
-// #include "ResourceAssignment_FiFM.h"
-
-
+#include "ResourceAssignment.h"
 
 using namespace std;
 
@@ -29,7 +22,18 @@ void Network::init () {
 
 	RoutingTable routinGTable (this);   
 	routinGTable.generate_routing_table ();
+	MaxNoH = 1;
+	MinNoH = 100;
+	for (int i = 0; i < routingTable.size (); i++) {
+		for (int j = i + 1; j < routingTable[i].size (); j++) {
+			for (int m = 0; m < routingTable[i][j].size (); m++) {
+				if ((routingTable[i][j][m].size () - 1) > MaxNoH) MaxNoH = routingTable[i][j][m].size () - 1;
+				if ((routingTable[i][j][m].size () - 1) < MinNoH) MinNoH = routingTable[i][j][m].size () - 1;
+			}
+		}
+	}
 	
+	#ifdef DEBUG_contect_in_routingTable
 	for (int a = 0; a < NumofNodes; a++) {
 		for (int b = 0; b < NumofNodes; b++) {
 			cout << "***** ";
@@ -44,8 +48,9 @@ void Network::init () {
 		}
 		cout << endl;
 	}
-
+	#endif
 	
+	// Initialization of Resource Matrix
 	for (int i = 0; i < NumofNodes; i++) {
 		for (int j = 0; j < NumofNodes; j++) {
 			for (int c = 0; c < NumofCores; c++) {
@@ -80,17 +85,17 @@ void Network::init () {
 	AvgExtFrag = 0;
 	AvgIntFrag = 0;
 	AvgHybridFrag = 0;
-		
+
+	a = 0.4; b = 0.3; c = 0.3;
 }
 
-#ifdef AAA
 void Network::simulation () {
 	EventQueue *eventQueue = new EventQueue ();
 	TrafficGenerator trafficGenerator (this, eventQueue);
 	ResourceAssignment resourceAssignment (this, eventQueue);
 
 
-	Generate the first event
+	// Generate the first event
 	trafficGenerator.gen_first_request ();
 
 	while (!eventQueue->ev_Queue.empty ()) {
@@ -165,5 +170,4 @@ void Network::simulation () {
 	cout << "Average External Fragmentation: " << AvgExtFrag << endl;
 	cout << "Average Hybrid Fragmentation: " << AvgHybridFrag << endl; 
 }
-#endif
 

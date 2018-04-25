@@ -98,8 +98,6 @@ void RoutingTable::generate_routing_table () {
 
 	for (int src = 0; src < network->NumofNodes; src++) {
 		for (int dest = 0; dest < network->NumofNodes; dest++) {
-			cout << "***** ";
-			cout << "SRC is: " << src + 1 << " and DEST is: " << dest + 1 << endl;
 			if (src == dest) {
 				vector<int> T (1, -1);
 				vector< vector<int> > Z;
@@ -108,6 +106,11 @@ void RoutingTable::generate_routing_table () {
 				continue;
 			}
 			YroutingTable.push_back (bhandari.eliminate_common_links (src, dest, 10));
+			for (int i = 0; i < YroutingTable[0].size (); i++) {
+				if ((YroutingTable[0][i].size () - 1) < network->MaxNoH) network->MaxNoH = YroutingTable[0][i].size () - 1;
+				if ((YroutingTable[0][i].size () - 1) > network->MinNoH) network->MinNoH = YroutingTable[0][i].size () - 1;
+			}
+
 		}
 		network->routingTable.push_back (YroutingTable);
 		YroutingTable.clear ();
