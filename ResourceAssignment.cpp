@@ -7,6 +7,7 @@
 #define DEBUG_print_PotentialSections_and_PC
 #define DEBUG_collect_EventID_of_blocked_requests //need to collaberate with debug_print_eventid_of_blocked_requests
 
+#define DISPLAY_metrics
 #define PRINT_allocation_block_release
 
 #include <iostream>
@@ -180,7 +181,7 @@ double ResourceAssignment::path_compactness (list< vector<int> > &PotentialSec) 
 	if (TotalOSS == 0) PC = PC_MAX; 
 	else if (TotalOSS == NUMOFSPECTRALSLOTS) PC = 0;
 	else { 
-		PC = ((double) network->NumofCores * NUMOFSPECTRALSLOTS / TotalOSS) * (TotalASS / PotentialSec.size ());
+		PC = ((double) network->NumofCores * NUMOFSPECTRALSLOTS / TotalOSS) * ((double)TotalASS / PotentialSec.size ());
 	}
 
 	#ifdef DEBUG_print_PotentialSections_and_PC
@@ -211,7 +212,7 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 	vector<int> HAssignedSpectralSection;
 	unsigned int TempNumofTransponders = 0;
 	string MF = "BPSK";
-	unsigned int mfTimes = 0, NumofOccupiedSpectralSlots;
+	unsigned int mfTimes = 0, NumofOccupiedSpectralSlots = 0;
 	vector< vector<int> > mfTimesList, NoOSSList; 
 	list< vector<double> > WoPList;
 	vector<int> HmfTimesList, HNoOSSList;
@@ -219,9 +220,20 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 	vector<int> PathSortedIndex;
 	vector<int> AddrTranslation;
 	list<double> OnlyWeight; // Only Weight stored in the vector without indication of which path it belongs
+	vector<string> MFList;
 
 	PotentialSections.clear ();
 	PathList = network->routingTable[circuitRequest->Src][circuitRequest->Dest];
+
+
+	cout << "The Available " << PathList.size () << " Paths are:" << endl;
+	for (int i = 0; i < PathList.size (); i++) {
+		for (int j = 0; j < PathList[i].size () - 1; j++) {
+			cout << PathList[i][j] << "-->";
+		}
+		cout << PathList[i][PathList[i].size () - 1] << endl;
+	}
+
 	for (int i = 0; i < PathList.size (); i++) {
 		int NoOSS;
 		double WoP;
@@ -230,12 +242,13 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 		list< vector<int> > PSections;
 
 		cout << endl << "Path under checking is: " << endl;
-		for (int j = 0; j < PathList[i].size (); j++) {
-			cout << PathList[i][j] << ' '; 
+		for (int j = 0; j < PathList[i].size () - 1; j++) {
+			cout << PathList[i][j] << "->"; 
 		}
-		cout << endl;
+		cout << PathList[i][PathList[i].size () - 1] << endl;
 
 		NoOSS = modulationFormats.mf_chosen (PathList[i], &circuitRequest->OccupiedSpectralSlots, &circuitRequest->DataSize, &MF, &mfTimes);
+		MFList.push_back (MF);
 		cout << "Bits Per Signal is: " << mfTimes << " " << MF << endl;
 
 		// Calculate possible SpectralSlotSections on the link between every two nodes
@@ -259,15 +272,15 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 
 			int NoH = PathList[i].size () - 1;
 			cout << "Bits Per Signal is: " << mfTimes << "	Num of Hops is: " << NoH << endl;
-			cout << "Weight of BpS is: " << ((double) (mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) << "    Weights of Hops is: " << ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 /network->MaxNoH) << "    Weight of PC is: " << (double)(PC - PC_MIN) / (PC_MAX - PC_MIN) << endl;
-			WoP = network->a * ((double)(mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) + network->b * ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 / network->MaxNoH) + network->c * (PC - PC_MIN) / (PC_MAX - PC_MIN); 
 
-			cout << "WoP is " << WoP << endl << endl;
 
 			if (AvFlag == true)
 			{
 				AddrTranslation.push_back (i);
 				PotentialSections.push_back (PSections);
+				WoP = network->a * ((double)(mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) + network->b * ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 / network->MaxNoH) + network->c * (PC - PC_MIN) / (PC_MAX - PC_MIN); 
+				cout << "Weight of BpS is: " << ((double) (mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) << "    Weights of Hops is: " << ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 /network->MaxNoH) << "    Weight of PC is: " << (double)(PC - PC_MIN) / (PC_MAX - PC_MIN) << endl;
+				cout << "WoP is: " << WoP << endl;
 
 				HmfTimesList.push_back (i);
 				HmfTimesList.push_back (mfTimes);
@@ -285,11 +298,12 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 
 	// Sort WoPList
 	OnlyWeight.sort ();
-	
-for (auto i : OnlyWeight) {
-	cout << i << ' ';
-}
-cout << endl;
+
+	cout << endl << "Sorted Weights are:" << endl;
+	for (auto i : OnlyWeight) {
+		cout << i << ' ';
+	}
+	cout << endl;
 
 	list<double>::iterator IOW;
 	list< vector<double> >::iterator IWL;
@@ -306,11 +320,12 @@ cout << endl;
 		}
 	}
 
-	cout << "PathSortedIndex" << endl;
+	cout << "Sorted Path Index are:" << endl;
 	for (auto i : PathSortedIndex) {
 		cout << i << ' ';
 	}
 	cout << endl;
+
 	if (PathSortedIndex.size () == 0) {
 		AvailableFlag = false;
 	}
@@ -319,11 +334,11 @@ cout << endl;
 	for (int i = PathSortedIndex.size () - 1; i >= 0 ; i--) {
 		CircuitRoute = PathList[PathSortedIndex[i]];
 
-		cout << "Print the chosen Path " << "Index " << i << " Path No. " << PathSortedIndex[i] << endl;
-		for (int i = 0; i < CircuitRoute.size (); i++) {
-			cout << CircuitRoute[i] << ' ';
+		cout << "Trying to Allocate request on Path: " << endl;
+		for (int i = 0; i < CircuitRoute.size () - 1; i++) {
+			cout << CircuitRoute[i] << "-->";
 		}
-		cout << endl;
+		cout << CircuitRoute[CircuitRoute.size () - 1] << endl;
 
 		int SizeSum = 0;
 		int temp = 0;
@@ -333,28 +348,16 @@ cout << endl;
 		list< vector<int> >::iterator IPS;
 
 		int addr;
-		for (auto i : AddrTranslation) {
-			cout << i << ' ';
-		}
-		cout << endl;
+		MF = MFList[PathSortedIndex[i]];
 		for (addr = 0; addr < AddrTranslation.size (); addr++) {
 			if (PathSortedIndex[i] == AddrTranslation[addr]) break;
 		}
-		cout << "Print the chosen Path " << "Index " << i << " Path No. " << PathSortedIndex[i] << endl;
-		cout << "Addr is " << addr << endl;
-		cout << "Size is: " << PotentialSections[addr].size () << endl;
-		
+
 		for (IPS = PotentialSections[addr].begin (); IPS != PotentialSections[addr].end (); IPS++) {
 			Size.push_back (IPS->at (2) - IPS->at (1) + 1); 
 			SizeCnt++;
 		}
 		merge_sort (&Size, 0, SizeCnt - 1);
-
-		for (int i = 0; i < Size.size (); i++) {
-			cout << Size[i] << ' ';
-		}
-		cout << endl << SizeCnt  << ' ' << PotentialSections[addr].size () << endl;
-		
 		for (int s = SizeCnt - 1; s >= 0; s--) {
 			for (IPS = PotentialSections[addr].begin (); IPS != PotentialSections[addr].end (); IPS++) {
 				if ((IPS->at (2) - IPS->at (1) + 1) == Size[s]) {
@@ -378,10 +381,6 @@ cout << endl;
 
 		#ifdef DEBUG_print_resource_state_on_the_path
 		cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
-		for (int i = 0; i < CircuitRoute.size (); i++) {
-			cout << CircuitRoute[i] << ' ';
-		}
-		cout << endl;
 		cout << "PRINT resources BEFORE Allcation: " << endl;
 		for (int i = 1; i < CircuitRoute.size (); i++) {
 			cout << "On link " << CircuitRoute[i - 1] << " to " << CircuitRoute[i] << endl;
@@ -400,78 +399,59 @@ cout << endl;
 		bool SmallerFlag = false;
 		int OSS;  
 		for (int j = 0; j < mfTimesList.size (); j++) {
-			if (PathSortedIndex[i] == mfTimesList[j][0])
-				OSS = ceil ((double) circuitRequest->OccupiedSpectralSlots / mfTimesList[j][1]);
+			if (PathSortedIndex[i] == mfTimesList[j][0]) {
+				mfTimes = mfTimesList[j][1];
+				OSS = ceil ((double) circuitRequest->OccupiedSpectralSlots / mfTimes);
+			}
 		}
 		
-		cout << "OSS is: " << OSS << endl;
 		list< vector<int> >::iterator ISS = SortedSections.begin ();
 		list< vector<int> >::iterator IT;
 		while (OSS > 0) {
-			cout << "In while loop: " << endl;
-			for (IT = SortedSections.begin (); IT != SortedSections.end (); IT++) {
-				SizeSum += IT->at (2) - IT->at (1) + 1; 
+			/* Allocation */
+			if (ISS == SortedSections.end ()) {
+				if (BiggerFlag == true) {
+					ISS--;
+					SmallerFlag = true;
+					continue;
+				}
 			}
-
-			if (SizeSum <= OSS || SortedSections.empty ()) {
-				cout << "In first if " << endl;
-				AvailableFlag = false;
+			else if (ISS->at (2) - ISS->at (1) + 1 == OSS + GB) {
+				HAssignedSpectralSection.push_back (ISS->at (0));
+				HAssignedSpectralSection.push_back (ISS->at (1));
+				HAssignedSpectralSection.push_back (ISS->at (2));
+				AssignedSpectralSection.push_back (HAssignedSpectralSection);
+				TempNumofTransponders++;
 				break;
 			}
-			else {
-				cout << "In first else" << endl;
-
-				/* Allocation */
-				if (ISS == SortedSections.end ()) {
-					cout << "In sec if" << endl;
-					if (BiggerFlag == true) {
-						ISS--;
-						SmallerFlag = true;
-						continue;
-					}
-				}
-				else if (ISS->at (2) - ISS->at (1) + 1 == OSS + GB) {
-					cout << "In sec else" << endl;
+			else if (ISS->at (2) - ISS->at (1) + 1 > OSS + GB) {
+				BiggerFlag = true;
+				if (SmallerFlag == true) {
 					HAssignedSpectralSection.push_back (ISS->at (0));
 					HAssignedSpectralSection.push_back (ISS->at (1));
-					HAssignedSpectralSection.push_back (ISS->at (2));
+					HAssignedSpectralSection.push_back (ISS->at (1) + OSS + GB - 1); 
 					AssignedSpectralSection.push_back (HAssignedSpectralSection);
 					TempNumofTransponders++;
 					break;
 				}
-				else if (ISS->at (2) - ISS->at (1) + 1 > OSS + GB) {
-					cout << "In 3rd else" << endl;
-					BiggerFlag = true;
-					if (SmallerFlag == true) {
-						HAssignedSpectralSection.push_back (ISS->at (0));
-						HAssignedSpectralSection.push_back (ISS->at (1));
-						HAssignedSpectralSection.push_back (ISS->at (1) + OSS + GB - 1); 
-						AssignedSpectralSection.push_back (HAssignedSpectralSection);
-						TempNumofTransponders++;
-						break;
-					}
-					ISS++;
+				ISS++;
+			}
+			else if (ISS->at (2) - ISS->at (1) + 1 < OSS + GB) {
+				if (BiggerFlag == true) {
+					ISS--;
+					SmallerFlag = true;
+					continue;
 				}
-				else if (ISS->at (2) - ISS->at (1) + 1 < OSS + GB) {
-					cout << "In 4th else" << endl;
-					if (BiggerFlag == true) {
-						ISS--;
-						SmallerFlag = true;
-						continue;
-					}
-					HAssignedSpectralSection.push_back (ISS->at (0));
-					HAssignedSpectralSection.push_back (ISS->at (1));
-					HAssignedSpectralSection.push_back (ISS->at (2));
-					AssignedSpectralSection.push_back (HAssignedSpectralSection);
-					OSS -= ISS->at (2) - ISS->at (1) + 1 - GB;
-					HAssignedSpectralSection.clear ();
-					ISS = SortedSections.erase (ISS);
-					TempNumofTransponders++;
-				}
+				HAssignedSpectralSection.push_back (ISS->at (0));
+				HAssignedSpectralSection.push_back (ISS->at (1));
+				HAssignedSpectralSection.push_back (ISS->at (2));
+				AssignedSpectralSection.push_back (HAssignedSpectralSection);
+				OSS -= ISS->at (2) - ISS->at (1) + 1 - GB;
+				HAssignedSpectralSection.clear ();
+				ISS = SortedSections.erase (ISS);
+				TempNumofTransponders++;
 			}
 		}
-
-		cout << "AvailableFlag is: " << AvailableFlag << endl;
 		if (AvailableFlag == true) break;
 	}
 
@@ -506,6 +486,9 @@ cout << endl;
 				CoreCnter++;
 			}
 		}
+		for (int i = 0; i < AssignedSpectralSection.size (); i++) {
+			NumofOccupiedSpectralSlots += AssignedSpectralSection[i][2] - AssignedSpectralSection[i][1] + 1; 
+		}
 
 		#ifdef PRINT_allocation_block_release
 		cout << "------------------------------------------------------------" << endl;
@@ -531,7 +514,7 @@ cout << endl;
 
 		network->NumofAllocatedRequests++;
 		network->NumofSections = TempNumofTransponders;
-		network->TotalHoldingTime += circuitRequest->Duration;
+		// network->TotalHoldingTime += circuitRequest->Duration;
 		network->NumofTransponders = network->NumofTransponders + TempNumofTransponders;
 		network->TotalTranspondersUsed += TempNumofTransponders;
 		network->TotalCoresUsed += CoreCnter;
@@ -539,13 +522,21 @@ cout << endl;
 		network->TotalDataSize += circuitRequest->DataSize;
 		network->TotalSSUsed += NumofOccupiedSpectralSlots * mfTimes;
 		network->TotalSSOccupied += (NumofOccupiedSpectralSlots + TempNumofTransponders) * mfTimes;
+		
+		#ifdef DISPLAY_metrics
+		cout << "*** METRICS ***" << endl;
+		cout << "    Bits Per Signal: " << mfTimes << endl;
+		cout << "    NumofSections: " << network->NumofSections << endl; 
+		cout << "    NumofTransponders: " << network->NumofTransponders << "  This time: " << TempNumofTransponders << endl; 
+		cout << "    TotalTranspondersUsed: " << network->TotalTranspondersUsed << "  This time: " << TempNumofTransponders << endl; 
+		cout << "    TotalGBUsed: " << network->TotalGBUsed << "  This time: " << TempNumofTransponders << endl; 
+		cout << "    TotalDataSize: " << network->TotalDataSize << "  This time: " << circuitRequest->DataSize << endl; 
+		cout << "    TotalSSUsed: " << network->TotalSSUsed << "  This time: " << NumofOccupiedSpectralSlots * mfTimes << endl; 
+		cout << "    TotalSSOccupied: " << network->TotalSSOccupied << "  This time: " << (NumofOccupiedSpectralSlots + TempNumofTransponders) * mfTimes << endl; 
+		#endif
 	}
 
 	#ifdef DEBUG_print_resource_state_on_the_path
-	for (int i = 0; i < CircuitRoute.size (); i++) {
-		cout << CircuitRoute[i] << ' ';
-	}
-	cout << endl;
 	cout << "PRINT resources AFTER Allocation:" << endl;
 	for (int i = 1; i < CircuitRoute.size (); i++) {
 		cout << "On link " << CircuitRoute[i - 1] << " to " << CircuitRoute[i] << endl;
@@ -565,10 +556,6 @@ cout << endl;
 void ResourceAssignment::handle_releases (CircuitRelease * circuitRelease) {
 	#ifdef DEBUG_print_resource_state_on_the_path
 	cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
-	for (int i = 0; i < circuitRelease->CircuitRoute.size (); i++) {
-		cout << circuitRelease->CircuitRoute[i] << ' ';
-	}
-	cout << endl;
 	cout << "PRINT resources BEFORE Release:" << endl;
 	for (int i = 1; i < circuitRelease->CircuitRoute.size (); i++) {
 		cout << "On link " << circuitRelease->CircuitRoute[i-1] << " to " << circuitRelease->CircuitRoute[i] << endl;
@@ -594,6 +581,11 @@ void ResourceAssignment::handle_releases (CircuitRelease * circuitRelease) {
 
 	#ifdef PRINT_allocation_block_release
 	cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+	cout << "Released Event on Path:" << endl;
+	for (int i = 0; i < circuitRelease->CircuitRoute.size () - 1; i++) {
+		cout << circuitRelease->CircuitRoute[i] << "-->";
+	}
+	cout << circuitRelease->CircuitRoute[circuitRelease->CircuitRoute.size () - 1] << endl;
 	cout << "Release Event: " << circuitRelease->EventID << "\tTime: " << circuitRelease->EventTime << endl;
 	for (int i = 0; i < circuitRelease->OccupiedSpectralSection.size (); i++) {
 		cout << "Core: " << circuitRelease->OccupiedSpectralSection[i][0] << "  Spectral Section: " << circuitRelease->OccupiedSpectralSection[i][1] << " to " << circuitRelease->OccupiedSpectralSection[i][2] << endl;
@@ -602,10 +594,6 @@ void ResourceAssignment::handle_releases (CircuitRelease * circuitRelease) {
 	#endif
 
 	#ifdef DEBUG_print_resource_state_on_the_path
-	for (int i = 0; i < circuitRelease->CircuitRoute.size (); i++) {
-		cout << circuitRelease->CircuitRoute[i] << ' ';
-	}
-	cout << endl;
 	cout << "PRINT resources AFTER Release:" << endl;
 	for (int i = 1; i < circuitRelease->CircuitRoute.size (); i++) {
 		cout << "On link " << circuitRelease->CircuitRoute[i-1] << " to " << circuitRelease->CircuitRoute[i] << endl;
