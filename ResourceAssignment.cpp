@@ -176,8 +176,6 @@ double ResourceAssignment::path_compactness (list< vector<int> > &PotentialSec) 
 	}
 	TotalOSS = network->NumofCores * NUMOFSPECTRALSLOTS - TotalASS;
 
-	cout << "Num of Core is: " << network->NumofCores << "    Num of TotalOSS is: " << TotalOSS << "    TotalASS is: " << TotalASS << "    Num of AS is: " << PotentialSec.size () << endl; 
-
 	if (TotalOSS == 0) PC = PC_MAX; 
 	else if (TotalOSS == NUMOFSPECTRALSLOTS) PC = 0;
 	else { 
@@ -278,8 +276,8 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 			{
 				AddrTranslation.push_back (i);
 				PotentialSections.push_back (PSections);
-				WoP = network->a * ((double)(mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) + network->b * ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 / network->MaxNoH) + network->c * (PC - PC_MIN) / (PC_MAX - PC_MIN); 
-				cout << "Weight of BpS is: " << ((double) (mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) << "    Weights of Hops is: " << ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 /network->MaxNoH) << "    Weight of PC is: " << (double)(PC - PC_MIN) / (PC_MAX - PC_MIN) << endl;
+				WoP = network->a * ((double)(mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) + network->b * ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 / network->MaxNoH) + network->c * (PC - network->NumofCores * PC_MIN) / (network->NumofCores * (PC_MAX - PC_MIN)); 
+				cout << "Weight of BpS is: " << ((double) (mfTimes - LmfTimes) / (HmfTimes - LmfTimes)) << "    Weights of Hops is: " << ((double)1 / NoH - (double)1 / network->MaxNoH) / ((double)1 / network->MinNoH - (double)1 /network->MaxNoH) << "    Weight of PC is: " << (double)(PC - PC_MIN) / (network->NumofCores * (PC_MAX - PC_MIN)) << endl;
 				cout << "WoP is: " << WoP << endl;
 
 				HmfTimesList.push_back (i);

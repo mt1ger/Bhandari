@@ -7,7 +7,7 @@
 #include "EventQueue.h"
 #include "RoutingTable.h"
 
-#define PC_MAX 20000
+#define PC_MAX 16500
 #define PC_MIN 0
 
 class ResourceAssignment {
@@ -33,4 +33,4 @@ class ResourceAssignment {
 
 #endif
 
-//[94, 929, 708, 963, 44, 852, 742, 844, 116, 486, 564, 26, 59, 403]
+//[94, 933, 708, 963, 44, 852, 742, 844, 116, 486, 564, 26, 59, 403]
