@@ -40,7 +40,10 @@ int ModulationFormats::mf_chosen (vector<int> & shortestPath, unsigned int * occ
 		Dist = search_link_weight (shortestPath[i - 1], shortestPath[i]);
 		TotalDist = TotalDist + Dist;
 	}
+
+	#ifdef DISPLAY_path_checking
 	cout << "TotalDist is " << TotalDist << endl;
+	#endif
 
 	if (TotalDist > 2500 && TotalDist <= 5000) {
 		m_Format = BPSK;
