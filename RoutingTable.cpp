@@ -9,6 +9,36 @@
 
 using namespace std;
 
+// Step 1: Use Dijkstra Algorithm to generate predecessor list
+void RoutingTable::get_predecessor_list () {
+	vector<int> hpredecessors;
+	Topology topology (network);
+	Dijkstra dijkstra (network);
+
+	topology.read_topology ();
+	dijkstra.ajacent_nodes (dijkstra.AjacentNodes, network->NodesWeight);
+	
+	for (int i = 0; i < network->NumofNodes; i++) {
+		dijkstra.shortest_path (i, -1, hpredecessors, network->NodesWeight);
+
+		predecessors.push_back (hpredecessors);
+		hpredecessors.clear ();
+	}
+	
+	#ifdef DEBUG_get_predecessor_list
+	cout << endl;
+	cout << "Predecessor List: " << endl;
+	for (int i = 0; i < network->NumofNodes; i++) {
+		for (int j = 0; j < network->NumofNodes; j++) {
+			cout << predecessors[i][j] + 1 << ' ';
+		}
+		cout << endl;
+	}
+	#endif
+}
+
+
+// Step 2: Use the predecessor list generated in Step 1 to derive Single source shortest path
 vector< vector <int> > RoutingTable::single_src_routing_table (int src) {
 	stack<int> pathStack;
 	vector<int> shortestPath;
@@ -39,36 +69,9 @@ vector< vector <int> > RoutingTable::single_src_routing_table (int src) {
 	return singleSrcRoutingTable;
 }
 
-void RoutingTable::get_predecessor_list () {
-	vector<int> hpredecessors;
-	Topology topology (network);
-	Dijkstra dijkstra (network);
 
-	topology.read_topology ();
-	dijkstra.ajacent_nodes (dijkstra.AjacentNodes, network->NodesWeight);
-	
-	for (int i = 0; i < network->NumofNodes; i++) {
-		dijkstra.shortest_path (i, -1, hpredecessors, network->NodesWeight);
-
-		predecessors.push_back (hpredecessors);
-		hpredecessors.clear ();
-	}
-	
-	#ifdef DEBUG_get_predecessor_list
-	cout << endl;
-	cout << "Predecessor List: " << endl;
-	for (int i = 0; i < network->NumofNodes; i++) {
-		for (int j = 0; j < network->NumofNodes; j++) {
-			cout << predecessors[i][j] + 1 << ' ';
-		}
-		cout << endl;
-	}
-	#endif
-}
-
-
+// Step 3: Function which really generate routing table that calls Step 1 and Step 2
 void RoutingTable::generate_dijkstra_routing_table () {
-
 	get_predecessor_list ();
 
 	for (int i = 0; i < network->NumofNodes; i++) {
@@ -90,6 +93,8 @@ void RoutingTable::generate_dijkstra_routing_table () {
 	#endif
 }
 
+
+// Step 4: Base on the first time Dijkstra Algorithm and its associated DroutingTable, use Bhandari Algorithm to generate final routing table 
 void RoutingTable::generate_routing_table () {
 	vector< vector< vector<int> > > YroutingTable;
 	Bhandari bhandari (network);
@@ -118,22 +123,5 @@ void RoutingTable::generate_routing_table () {
 }
 
 
-// vector<int> RoutingTable::get_shortest_path (int src, int dest) {
-// 	vector<int> shortestPath;
-//
-// 	
-// 	for (int i = 0; i < network->DRoutingTable[src][dest].size (); i++) {
-// 		shortestPath.push_back (network->DRoutingTable[src][dest][i]);	
-// 	}
-//
-// 	#ifdef DEBUG_get_shortest_path
-// 	for (int i = 0; i < network->DRoutingTable[src][dest].size (); i++) {
-// 		cout << shortestPath[i] + 1 << ' '; 	
-// 	}
-// 	cout << endl;
-// 	#endif
-// 	
-// 	return shortestPath;
-// }
 
 

@@ -165,12 +165,13 @@ double ResourceAssignment::path_compactness (list< vector<int> > &PotentialSec) 
 	for (i = PotentialSec.begin (); i != PotentialSec.end (); i++) {
 		TotalASS += i->at (2) - i->at (1) + 1;
 	}
-	TotalOSS = network->NumofCores * NUMOFSPECTRALSLOTS - TotalASS;
+	// TotalOSS = network->NumofCores * NUMOFSPECTRALSLOTS - TotalASS;
 
 	if (TotalOSS == 0) PC = PC_MAX; 
 	else if (TotalOSS == NUMOFSPECTRALSLOTS) PC = 0;
 	else { 
-		PC = ((double) network->NumofCores * NUMOFSPECTRALSLOTS / TotalOSS) * ((double)TotalASS / PotentialSec.size ());
+		// PC = ((double) network->NumofCores * NUMOFSPECTRALSLOTS / TotalOSS) * ((double)TotalASS / PotentialSec.size ());
+		PC = ((double) TotalASS / PotentialSec.size ());
 	}
 
 	#ifdef DEBUG_print_PotentialSections_and_PC
@@ -455,6 +456,10 @@ void ResourceAssignment::handle_requests (CircuitRequest * circuitRequest) {
 			}
 		}
 		if (AvailableFlag == true) break;
+	}
+	
+	if (AssignedSpectralSection.size () > network->SectionNumLimitation) {
+		AvailableFlag = false;
 	}
 
 	

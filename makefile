@@ -1,7 +1,7 @@
-CC=g++-7 
+CC=g++-8 
 LDFLAGS=-pthread
 CFLAGS=-c -Wall
-EXEC=Sim
+EXEC=Sim1
 
 SRCS=Network.cpp\
 	 Dijkstra.cpp\

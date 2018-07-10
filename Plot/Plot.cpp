@@ -17,8 +17,8 @@ mutex mtx;
 
 void thread_function (string cmd) {
 	mtx.lock ();
-	system (cmd.c_str ());
-	// cout << cmd << endl;
+	// system (cmd.c_str ());
+	cout << cmd << endl;
 	mtx.unlock ();
 }
 
@@ -27,10 +27,10 @@ int main () {
 	vector<int> Core, Lambda, Seed;
 	double Number;
 	static unsigned int NumofRequests = NUMOFREQUESTS;
-	static string Exec = "/home/mt1ger/Desktop/Simulator/Bhandari/Sim"; 
-	static string Topo = "/home/mt1ger/Desktop/Simulator/Bhandari/Topology/NSF14.txt";
+	static string Exec = "/Users/mt1ger/Desktop/Simulator/Bhandari/Sim"; 
+	static string Topo = "/Users/mt1ger/Desktop/Simulator/Bhandari/Topology/NSF14.txt";
 	// static string Topo = "~/Desktop/Simulator/SimSDM-EON/Topology/Test.txt";
-	static string Path = "/home/mt1ger/Desktop/Simulator/SimSDM-EON/Plot/";
+	static string Path = "/Users/mt1ger/Desktop/Simulator/Bhandari/Plot/";
 	unsigned int cnt = 0;
 	string Filename;
 	txtParse txtparse;
